@@ -1,0 +1,191 @@
+-- Views
+USE [QuanLyBenhVien];
+GO
+
+SET ANSI_NULLS ON;
+GO
+SET QUOTED_IDENTIFIER ON;
+GO
+CREATE   VIEW dbo.vw_AuditLog AS SELECT * FROM dbo.AuditLog;
+GO
+
+SET ANSI_NULLS ON;
+GO
+SET QUOTED_IDENTIFIER ON;
+GO
+CREATE   VIEW dbo.vw_BenhNhan AS SELECT * FROM dbo.BenhNhan;
+GO
+
+SET ANSI_NULLS ON;
+GO
+SET QUOTED_IDENTIFIER ON;
+GO
+CREATE   VIEW dbo.vw_ChiTietHoaDon AS SELECT * FROM dbo.ChiTietHoaDon;
+GO
+
+SET ANSI_NULLS ON;
+GO
+SET QUOTED_IDENTIFIER ON;
+GO
+CREATE   VIEW dbo.vw_ChiTietKetQuaCLS AS SELECT * FROM dbo.ChiTietKetQuaCLS;
+GO
+
+SET ANSI_NULLS ON;
+GO
+SET QUOTED_IDENTIFIER ON;
+GO
+CREATE   VIEW dbo.vw_ChiTietNhapKho AS SELECT * FROM dbo.ChiTietNhapKho;
+GO
+
+SET ANSI_NULLS ON;
+GO
+SET QUOTED_IDENTIFIER ON;
+GO
+CREATE   VIEW dbo.vw_DichVuCLS AS SELECT * FROM dbo.DichVuCLS;
+GO
+
+SET ANSI_NULLS ON;
+GO
+SET QUOTED_IDENTIFIER OFF;
+GO
+CREATE   VIEW dbo.vw_DonThuoc AS SELECT * FROM dbo.DonThuoc;
+GO
+
+SET ANSI_NULLS ON;
+GO
+SET QUOTED_IDENTIFIER ON;
+GO
+CREATE   VIEW dbo.vw_GiuongBenh AS
+SELECT 
+    g.MaGiuong,
+    g.MaPhong,
+    g.SoGiuong,
+    g.TrangThai,
+    g.DonGiaNgay,
+    p.TenPhong,
+    p.MaKhoa
+FROM dbo.GiuongBenh g
+LEFT JOIN dbo.Phong p ON g.MaPhong = p.MaPhong;
+GO
+
+SET ANSI_NULLS ON;
+GO
+SET QUOTED_IDENTIFIER ON;
+GO
+CREATE   VIEW dbo.vw_HoaDon AS SELECT * FROM dbo.HoaDon;
+GO
+
+SET ANSI_NULLS ON;
+GO
+SET QUOTED_IDENTIFIER ON;
+GO
+CREATE   VIEW dbo.vw_KetQuaCLS AS SELECT * FROM dbo.KetQuaCLS;
+GO
+
+SET ANSI_NULLS ON;
+GO
+SET QUOTED_IDENTIFIER ON;
+GO
+-- 2. Tạo/Cập nhật View vw_Khoa
+CREATE   VIEW dbo.vw_Khoa AS
+SELECT 
+    k.MaKhoa, 
+    k.TenKhoa, 
+    k.MoTa, 
+    k.MaTruongKhoa, 
+    ISNULL(k.TrangThai, 1) AS TrangThai,
+    nv.HoTen AS TenTruongKhoa
+FROM dbo.Khoa k
+LEFT JOIN dbo.NhanVien nv ON k.MaTruongKhoa = nv.MaNhanVien;
+GO
+
+SET ANSI_NULLS ON;
+GO
+SET QUOTED_IDENTIFIER ON;
+GO
+CREATE   VIEW dbo.vw_LichHen AS SELECT * FROM dbo.LichHen;
+GO
+
+SET ANSI_NULLS ON;
+GO
+SET QUOTED_IDENTIFIER ON;
+GO
+CREATE   VIEW dbo.vw_LichTruc AS SELECT * FROM dbo.LichTruc;
+GO
+
+SET ANSI_NULLS ON;
+GO
+SET QUOTED_IDENTIFIER ON;
+GO
+CREATE   VIEW dbo.vw_NhanVien AS SELECT * FROM dbo.NhanVien;
+GO
+
+SET ANSI_NULLS ON;
+GO
+SET QUOTED_IDENTIFIER ON;
+GO
+CREATE   VIEW dbo.vw_NoiTru AS SELECT * FROM dbo.NoiTru;
+GO
+
+SET ANSI_NULLS ON;
+GO
+SET QUOTED_IDENTIFIER ON;
+GO
+CREATE   VIEW dbo.vw_PhieuKham AS SELECT * FROM dbo.PhieuKham;
+GO
+
+SET ANSI_NULLS ON;
+GO
+SET QUOTED_IDENTIFIER ON;
+GO
+CREATE   VIEW dbo.vw_PhieuNhapKho AS SELECT * FROM dbo.PhieuNhapKho;
+GO
+
+SET ANSI_NULLS ON;
+GO
+SET QUOTED_IDENTIFIER ON;
+GO
+CREATE   VIEW dbo.vw_Phong AS
+SELECT 
+    p.MaPhong,
+    p.TenPhong,
+    p.LoaiPhong,
+    p.MaKhoa,
+    p.TrangThai,
+    k.TenKhoa
+FROM dbo.Phong p
+JOIN dbo.Khoa k ON p.MaKhoa = k.MaKhoa;
+GO
+
+SET ANSI_NULLS ON;
+GO
+SET QUOTED_IDENTIFIER ON;
+GO
+CREATE   VIEW dbo.vw_TaiKhoan
+AS
+    SELECT MaTaiKhoan, TenDangNhap, MatKhauHash, Email, SoDienThoai, VaiTro, TrangThai, NgayTao
+    FROM dbo.TaiKhoan;
+GO
+
+SET ANSI_NULLS ON;
+GO
+SET QUOTED_IDENTIFIER OFF;
+GO
+
+CREATE VIEW dbo.vw_ThongBao AS
+SELECT * FROM dbo.ThongBao;
+GO
+
+SET ANSI_NULLS ON;
+GO
+SET QUOTED_IDENTIFIER ON;
+GO
+CREATE   VIEW dbo.vw_Thuoc AS SELECT * FROM dbo.Thuoc;
+GO
+
+SET ANSI_NULLS ON;
+GO
+SET QUOTED_IDENTIFIER ON;
+GO
+CREATE   VIEW dbo.vw_YeuCauChuyenKhoa AS SELECT * FROM dbo.YeuCauChuyenKhoa;
+GO
