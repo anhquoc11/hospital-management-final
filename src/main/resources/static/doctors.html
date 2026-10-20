@@ -1275,7 +1275,7 @@
             if (grp) {
                 grp.style.display = 'block';
                 const sel = document.getElementById('dChonTaiKhoan');
-                sel.innerHTML = '<option value="">-- Đang tải tài khoản... --</option>';
+                sel.innerHTML = '<option value="" hidden disabled selected>-- Chọn tài khoản liên kết --</option>';
                 try {
                     const res = await fetch('/api/v1/taikhoan/unlinked');
                     if (res.ok) {
