@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bảng Điều Khiển & Báo Cáo Quản Trị - MEDICARE HIS</title>
+    <!-- Fonts & Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <style>
+        :root {
+            --primary: #0284c7;
+            --primary-hover: #0369a1;
+            --sidebar-bg: #0f172a;
+            --bg-main: #f8fafc;
+            --card-bg: #ffffff;
+            --text-dark: #1e293b;
+            --text-muted: #64748b;
+            --border-color: #e2e8f0;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --indigo: #6366f1;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            display: flex;
+            min-height: 100vh;
+            background-color: var(--bg-main);
+            color: var(--text-dark);
+        }
+
+        /* SIDEBAR THU GỌN (HOVER TO EXPAND) */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100vh;
+            width: 70px; /* Thu gọn mặc định */
+            background-color: var(--sidebar-bg);
+            color: #cbd5e1;
+            display: flex;
+            flex-direction: column;
+            z-index: 1000;
+            overflow-x: hidden;
+            transition: width 0.3s ease; /* Hiệu ứng mở rộng trơn tru */
+            box-shadow: 2px 0 8px rgba(0,0,0,0.15);
+        }
+
+        .sidebar:hover {
+            width: 260px; /* Chiều rộng khi di chuột vào */
+        }
+
+        /* Icon 3 gạch (Hamburger) */
+        .hamburger-menu {
+            padding: 20px 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-bottom: 1px solid #1e293b;
+            color: white;
+            font-size: 20px;
+            transition: padding-left 0.3s ease, justify-content 0.3s ease;
+        }
+
+        .sidebar:hover .hamburger-menu {
+            justify-content: flex-start;
+            padding-left: 24px;
+        }
+
+        .sidebar-brand {
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: #ffffff;
+            font-size: 18px;
+            font-weight: 700;
+            white-space: nowrap; /* Không cho rớt dòng */
+        }
+
+        .sidebar-brand i {
+            color: #38bdf8;
+            font-size: 24px;
+            min-width: 24px;
+            text-align: center;
+        }
+
+        .sidebar-menu {
+            list-style: none;
+            padding: 16px 10px;
+            flex-grow: 1;
+        }
+
+        .sidebar-menu li {
+            margin-bottom: 4px;
+        }
+
+        .sidebar-menu a {
+            display: flex;
+            align-items: center;
+            padding: 12px 10px;
+            color: #94a3b8;
+            text-decoration: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s;
+            white-space: nowrap; /* Chữ không bị gãy dòng lúc đang thu gọn */
+        }
+
+        .sidebar-menu a:hover,
+        .sidebar-menu a.active {
+            background-color: var(--primary);
+            color: #ffffff;
+        }
+
+        .sidebar-menu a i {
+            min-width: 30px; /* Giữ icon luôn nằm đúng vị trí */
+            text-align: center;
+            font-size: 18px;
+        }
+
+        /* CSS ẩn/hiện chữ menu */
+        .link-text {
+            opacity: 0;
+            transition: opacity 0.2s ease;
+            margin-left: 8px;
+        }
+
+        .sidebar:hover .link-text {
+            opacity: 1;
+        }
+
+        /* MAIN CONTAINER */
+        .main-container {
+            margin-left: 70px; /* Bỏ trống 70px cố định cho Sidebar lúc thu gọn */
+            width: calc(100% - 70px);
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+        }
+
+        .top-header {
+            background-color: var(--card-bg);
+            border-bottom: 1px solid var(--border-color);
+            padding: 16px 32px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .header-title h2 {
+            font-size: 20px;
+            font-weight: 700;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .btn-action {
+            height: 38px;
+            padding: 0 14px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+        }
+
+        .btn-excel {
+            background: #ecfdf5;
+            color: #059669;
+            border: 1px solid #a7f3d0;
+        }
+        .btn-excel:hover {
+            background: #d1fae5;
+        }
+
+        .btn-pdf {
+            background: #eff6ff;
+            color: #2563eb;
+            border: 1px solid #bfdbfe;
+        }
+        .btn-pdf:hover {
+            background: #dbeafe;
+        }
+
+        .btn-logout {
+            background: #fee2e2;
+            color: #ef4444;
+            border: none;
+            padding: 8px 14px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        /* CONTENT BODY */
+        .content-body {
+            padding: 24px 32px;
+        }
+
+        /* KPI METRIC CARDS */
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            margin-bottom: 24px;
+        }
+
+        .kpi-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+        }
+
+        .kpi-val {
+            font-size: 24px;
+            font-weight: 800;
+            color: var(--text-dark);
+            margin-top: 4px;
+        }
+
+        .kpi-label {
+            font-size: 13px;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        .kpi-sub {
+            font-size: 11.5px;
+            color: var(--success);
+            font-weight: 600;
+            margin-top: 6px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .kpi-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+        }
+
+        /* BỐ CỤC BÁO CÁO 2 CỘT */
+        .analytics-grid {
+            display: grid;
+            grid-template-columns: 1.15fr 0.85fr;
+            gap: 24px;
+            margin-bottom: 24px;
+        }
+
+        .report-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+        }
+
+        .report-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 12px;
+        }
+
+        .report-header h3 {
+            font-size: 16px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* TABLES */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13.5px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f8fafc;
+            padding: 10px 12px;
+            border-bottom: 1px solid var(--border-color);
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        td {
+            padding: 12px;
+            border-bottom: 1px solid var(--border-color);
+            vertical-align: middle;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        @media (max-width: 1100px) {
+            .kpi-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .analytics-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Chế độ in báo cáo chuẩn */
+        @media print {
+            .sidebar, .top-header .header-actions, .btn-logout {
+                display: none !important;
+            }
+            body {
+                background: #ffffff;
+            }
+            .main-container {
+                width: 100%;
+                margin-left: 0; /* Reset lề trái khi in */
+            }
+            .content-body {
+                padding: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Sidebar Menu chuẩn 10 phân hệ -->
+    <aside class="sidebar">
+        <!-- Nút 3 gạch mở menu -->
+        <div class="hamburger-menu">
+            <i class="fa-solid fa-bars"></i>
+        </div>
+
+        <div class="sidebar-brand">
+            <i class="fa-solid fa-hospital"></i>
+            <span class="link-text">MEDICARE HIS</span>
+        </div>
+        <ul class="sidebar-menu">
+            <li><a href="/dashboard.html" class="active"><i class="fa-solid fa-chart-pie"></i> <span class="link-text">Bảng điều khiển</span></a></li>
+            <li><a href="/appointments.html"><i class="fa-solid fa-calendar-check"></i> <span class="link-text">Đặt lịch & Tiếp đón</span></a></li>
+            <li><a href="/patients.html"><i class="fa-solid fa-hospital-user"></i> <span class="link-text">Quản lý Bệnh nhân</span></a></li>
+            <li><a href="/doctors.html"><i class="fa-solid fa-user-doctor"></i> <span class="link-text">Danh sách Nhân viên</span></a></li>
+            <li><a href="/examination.html"><i class="fa-solid fa-stethoscope"></i> <span class="link-text">Tiếp đón & Khám bệnh</span></a></li>
+            <li><a href="/laboratory.html"><i class="fa-solid fa-flask-vial"></i> <span class="link-text">Cận lâm sàng (CLS)</span></a></li>
+            <li><a href="/pharmacy.html"><i class="fa-solid fa-pills"></i> <span class="link-text">Kho Dược & Đơn thuốc</span></a></li>
+            <li><a href="/inpatient.html"><i class="fa-solid fa-bed-pulse"></i> <span class="link-text">Quản lý Giường bệnh</span></a></li>
+            <li><a href="/billing.html"><i class="fa-solid fa-file-invoice-dollar"></i> <span class="link-text">Hóa đơn Viện phí</span></a></li>
+            <li><a href="/settings.html"><i class="fa-solid fa-gear"></i> <span class="link-text">Cấu hình hệ thống</span></a></li>
+            <li><a href="/referrals.html"><i class="fa-solid fa-arrows-turn-right"></i> <span class="link-text">Chuyển khoa & Hội chẩn</span></a></li>
+        </ul>
+    </aside>
+
+    <!-- Main Container -->
+    <div class="main-container">
+        <!-- Top Header & Nút Xuất Báo Cáo -->
+        <header class="top-header">
+            <div class="header-title">
+                <h2>Báo Cáo Hoạt Động & Phân Tích Thống Kê</h2>
+            </div>
+            <div class="header-actions">
+                <label for="reportFrom">Từ</label>
+                <input type="date" id="reportFrom">
+                <label for="reportTo">Đến</label>
+                <input type="date" id="reportTo">
+                
+                <!-- Nút xuất Excel đã thay đổi sang gọi hàm exportExcelReport -->
+                <button class="btn-action btn-excel" onclick="exportExcelReport()" title="Xuất báo cáo Excel/CSV">
+                    <i class="fa-solid fa-file-excel"></i> Xuất Excel
+                </button>
+
+                <button class="btn-action btn-pdf" onclick="window.print()" title="In báo cáo / Xuất PDF">
+                    <i class="fa-solid fa-file-pdf"></i> Xuất PDF
+                </button>
+                <button class="btn-logout" onclick="logout()">
+                    <i class="fa-solid fa-arrow-right-from-bracket"></i> Đăng xuất
+                </button>
+            </div>
+        </header>
+
+        <!-- Body -->
+        <main class="content-body">
+            <!-- 4 Thẻ chỉ số chính trong ngày -->
+            <div class="kpi-grid">
+                <div class="kpi-card">
+                    <div>
+                        <div class="kpi-label">Lượt khám trong kỳ</div>
+                        <div class="kpi-val" id="valVisits">--</div>
+                        <div class="kpi-sub">Theo ngày khám trên phiếu khám</div>
+                    </div>
+                    <div class="kpi-icon" style="background: #e0f2fe; color: #0284c7;">
+                        <i class="fa-solid fa-hospital-user"></i>
+                    </div>
+                </div>
+
+                <div class="kpi-card">
+                    <div>
+                        <div class="kpi-label">Doanh thu đã thanh toán</div>
+                        <div class="kpi-val" id="valRevenue">--</div>
+                        <div class="kpi-sub">Trừ phần BHYT chi trả</div>
+                    </div>
+                    <div class="kpi-icon" style="background: #d1fae5; color: #059669;">
+                        <i class="fa-solid fa-sack-dollar"></i>
+                    </div>
+                </div>
+
+                <div class="kpi-card">
+                    <div>
+                        <div class="kpi-label">Số chẩn đoán khác nhau</div>
+                        <div class="kpi-val" id="valDiseaseCount">--</div>
+                        <div class="kpi-sub">Trong các phiếu khám của kỳ</div>
+                    </div>
+                    <div class="kpi-icon" style="background: #ede9fe; color: #6366f1;">
+                        <i class="fa-solid fa-bed-pulse"></i>
+                    </div>
+                </div>
+
+                <div class="kpi-card">
+                    <div>
+                        <div class="kpi-label">Chẩn đoán phổ biến nhất</div>
+                        <div class="kpi-val" id="valTopDisease" style="font-size:15px; line-height:1.35; overflow-wrap:anywhere;">--</div>
+                        <div class="kpi-sub" id="valTopDiseaseCount">Chưa có dữ liệu</div>
+                    </div>
+                    <div class="kpi-icon" style="background: #fee2e2; color: #ef4444;">
+                        <i class="fa-solid fa-boxes-stacked"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Báo cáo tổng hợp, không hiển thị hồ sơ định danh -->
+            <div class="analytics-grid" style="grid-template-columns: 1fr;">
+                <div class="report-card">
+                    <div class="report-header">
+                        <h3><i class="fa-solid fa-chart-column" style="color: var(--primary);"></i> Bệnh phổ biến theo chẩn đoán</h3>
+                    </div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Chẩn đoán</th>
+                                <th style="text-align: right;">Số lượt</th>
+                            </tr>
+                        </thead>
+                        <tbody id="topDiseaseBody"><tr><td colspan="2">Đang tải thống kê...</td></tr></tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Thêm thư viện SheetJS để xuất file Excel (.xlsx) chuyên nghiệp -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+    <!-- Script Xuất file & Đăng xuất -->
+    <script>
+        async function loadDashboardStats() {
+            try {
+                const from = document.getElementById('reportFrom').value;
+                const to = document.getElementById('reportTo').value;
+                const response = await fetch(`/api/v1/dashboard/stats?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`);
+                if (!response.ok) throw new Error('Không tải được thống kê.');
+
+                const stats = await response.json();
+                document.getElementById('valVisits').textContent = Number(stats.totalVisits || 0).toLocaleString('vi-VN');
+                document.getElementById('valRevenue').textContent = Number(stats.totalRevenue || 0).toLocaleString('vi-VN') + ' đ';
+                document.getElementById('valDiseaseCount').textContent = String((stats.topDiseases || []).length);
+
+                const topDisease = (stats.topDiseases || [])[0];
+                document.getElementById('valTopDisease').textContent = topDisease ? topDisease.diagnosis : 'Chưa có';
+                document.getElementById('valTopDiseaseCount').textContent = topDisease ? `${topDisease.count} lượt` : 'Chưa có dữ liệu';
+
+                const tableBody = document.getElementById('topDiseaseBody');
+                tableBody.replaceChildren();
+                if (!stats.topDiseases || stats.topDiseases.length === 0) {
+                    const row = tableBody.insertRow();
+                    const cell = row.insertCell();
+                    cell.colSpan = 2;
+                    cell.textContent = 'Không có chẩn đoán trong khoảng ngày đã chọn.';
+                } else {
+                    stats.topDiseases.forEach(item => {
+                        const row = tableBody.insertRow();
+                        row.insertCell().textContent = item.diagnosis;
+                        row.insertCell().textContent = Number(item.count).toLocaleString('vi-VN');
+                    });
+                }
+            } catch (error) {
+                console.error("Lỗi tải dashboard stats:", error);
+            }
+        }
+
+        // HÀM XUẤT EXCEL CHUYÊN NGHIỆP (.xlsx)
+        function exportExcelReport() {
+            // 1. Lấy khoảng thời gian
+            const fromDate = document.getElementById('reportFrom').value;
+            const toDate = document.getElementById('reportTo').value;
+
+            // 2. Lấy dữ liệu 4 thẻ KPI
+            const visits = document.getElementById('valVisits').innerText;
+            const revenue = document.getElementById('valRevenue').innerText;
+            const diseaseCount = document.getElementById('valDiseaseCount').innerText;
+            const topDisease = document.getElementById('valTopDisease').innerText;
+
+            // 3. Lấy dữ liệu bảng
+            const tableBody = document.getElementById('topDiseaseBody');
+            const rows = tableBody.querySelectorAll('tr');
+            let tableData = [];
+            
+            rows.forEach(row => {
+                let rowData = [];
+                row.querySelectorAll('td, th').forEach(cell => {
+                    rowData.push(cell.innerText);
+                });
+                // Bỏ qua dòng chữ "Đang tải" hoặc "Không có dữ liệu"
+                if (rowData[0] && !rowData[0].includes("Đang tải") && !rowData[0].includes("Không có chẩn đoán")) {
+                    tableData.push(rowData);
+                }
+            });
+
+            // 4. Dàn trang cấu trúc file Excel (Mảng 2 chiều)
+            const excelData = [
+                ["BÁO CÁO HOẠT ĐỘNG & PHÂN TÍCH THỐNG KÊ - MEDICARE HIS"], // Dòng 1: Tiêu đề lớn
+                [`Kỳ báo cáo: Từ ${fromDate} đến ${toDate}`],               // Dòng 2: Thời gian
+                [""],                                                       // Dòng 3: Dòng trống
+                ["I. TỔNG QUAN CHỈ SỐ"],                                    // Dòng 4: Tiêu đề phần 1
+                ["Lượt khám trong kỳ", visits],
+                ["Doanh thu đã thanh toán", revenue],
+                ["Số chẩn đoán khác nhau", diseaseCount],
+                ["Chẩn đoán phổ biến nhất", topDisease],
+                [""],                                                       // Dòng trống
+                ["II. BỆNH PHỔ BIẾN THEO CHẨN ĐOÁN"],                       // Tiêu đề phần 2
+                ["Chẩn đoán (Mã ICD-10)", "Số lượt khám"]                   // Header của Bảng
+            ];
+
+            // Gộp dữ liệu bảng vào file Excel
+            tableData.forEach(row => {
+                excelData.push(row);
+            });
+
+            // 5. Tạo Workbook và Worksheet từ thư viện SheetJS
+            const ws = XLSX.utils.aoa_to_sheet(excelData);
+
+            // Tùy chỉnh độ rộng của cột cho đẹp (Cột A rộng 65, Cột B rộng 20)
+            ws['!cols'] = [{ wch: 65 }, { wch: 20 }];
+
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "BaoCaoHoatDong");
+
+            // 6. Xuất và tải file về máy
+            const fileName = `BaoCao_Medicare_${fromDate}_den_${toDate}.xlsx`;
+            XLSX.writeFile(wb, fileName);
+        }
+
+        function logout() {
+            sessionStorage.removeItem('authenticatedUser');
+            window.location.href = '/login.html';
+        }
+
+        window.onload = async function() {
+            const today = new Date();
+            const dateString = date => `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+            const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
+            document.getElementById('reportFrom').value = dateString(monthStart);
+            document.getElementById('reportTo').value = dateString(today);
+            document.getElementById('reportFrom').addEventListener('change', loadDashboardStats);
+            document.getElementById('reportTo').addEventListener('change', loadDashboardStats);
+            await loadDashboardStats();
+        };
+    </script>
+    <script src="/auth-guard.js?v=3"></script>
+</body>
+</html>

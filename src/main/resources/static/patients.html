@@ -1,0 +1,1234 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản Lý Bệnh Nhân & Hồ Sơ Bệnh Án - MEDICARE HIS</title>
+    <!-- Google Fonts & Font Awesome Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <style>
+        :root {
+            --primary: #0284c7;
+            --primary-hover: #0369a1;
+            --sidebar-bg: #0f172a;
+            --bg-main: #f8fafc;
+            --card-bg: #ffffff;
+            --text-dark: #1e293b;
+            --text-muted: #64748b;
+            --border-color: #e2e8f0;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            display: flex;
+            min-height: 100vh;
+            background-color: var(--bg-main);
+            color: var(--text-dark);
+        }
+
+        /* SIDEBAR THU GỌN (HOVER TO EXPAND) */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100vh;
+            width: 70px; /* Thu gọn mặc định */
+            background-color: var(--sidebar-bg);
+            color: #cbd5e1;
+            display: flex;
+            flex-direction: column;
+            z-index: 1000;
+            overflow-x: hidden;
+            transition: width 0.3s ease; /* Hiệu ứng mở rộng trơn tru */
+            box-shadow: 2px 0 8px rgba(0,0,0,0.15);
+        }
+
+        .sidebar:hover {
+            width: 260px; /* Chiều rộng khi di chuột vào */
+        }
+
+        /* Icon 3 gạch (Hamburger) */
+        .hamburger-menu {
+            padding: 20px 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-bottom: 1px solid #1e293b;
+            color: white;
+            font-size: 20px;
+            transition: padding-left 0.3s ease, justify-content 0.3s ease;
+        }
+
+        .sidebar:hover .hamburger-menu {
+            justify-content: flex-start;
+            padding-left: 24px;
+        }
+
+        .sidebar-brand {
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: #ffffff;
+            font-size: 18px;
+            font-weight: 700;
+            white-space: nowrap; /* Không cho rớt dòng */
+        }
+
+        .sidebar-brand i {
+            color: #38bdf8;
+            font-size: 24px;
+            min-width: 24px;
+            text-align: center;
+        }
+
+        .sidebar-menu {
+            list-style: none;
+            padding: 16px 10px;
+            flex-grow: 1;
+        }
+
+        .sidebar-menu li {
+            margin-bottom: 4px;
+        }
+
+        .sidebar-menu a {
+            display: flex;
+            align-items: center;
+            padding: 12px 10px;
+            color: #94a3b8;
+            text-decoration: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s;
+            white-space: nowrap; /* Chữ không bị gãy dòng lúc đang thu gọn */
+        }
+
+        .sidebar-menu a:hover,
+        .sidebar-menu a.active {
+            background-color: var(--primary);
+            color: #ffffff;
+        }
+
+        .sidebar-menu a i {
+            min-width: 30px; /* Giữ icon luôn nằm đúng vị trí */
+            text-align: center;
+            font-size: 18px;
+        }
+
+        /* CSS ẩn/hiện chữ menu */
+        .link-text {
+            opacity: 0;
+            transition: opacity 0.2s ease;
+            margin-left: 8px;
+        }
+
+        .sidebar:hover .link-text {
+            opacity: 1;
+        }
+
+        /* MAIN LAYOUT CHÍNH */
+        .main-container {
+            margin-left: 70px; /* Bỏ trống 70px cố định cho Sidebar lúc thu gọn */
+            width: calc(100% - 70px);
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+        }
+
+        .top-header {
+            background-color: var(--card-bg);
+            border-bottom: 1px solid var(--border-color);
+            padding: 16px 32px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .header-title h2 {
+            font-size: 20px;
+            font-weight: 700;
+        }
+
+        .btn-logout {
+            background: #fee2e2;
+            color: #ef4444;
+            border: none;
+            padding: 8px 14px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .content-body {
+            padding: 24px 32px;
+        }
+
+        /* ACTIONS & SEARCH BAR */
+        .action-bar {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 16px 20px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .doctor-record-tabs {
+            display: inline-flex;
+            gap: 4px;
+            padding: 4px;
+            background: #f1f5f9;
+            border-radius: 8px;
+        }
+
+        .doctor-record-tabs button {
+            border: 0;
+            border-radius: 6px;
+            padding: 8px 12px;
+            color: var(--text-muted);
+            background: transparent;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .doctor-record-tabs button.active {
+            color: #ffffff;
+            background: var(--primary);
+        }
+
+        .search-box {
+            position: relative;
+            display: flex;
+            align-items: center;
+            width: 380px;
+        }
+
+        .search-box i {
+            position: absolute;
+            left: 14px;
+            color: var(--text-muted);
+            font-size: 14px;
+        }
+
+        .search-input {
+            width: 100%;
+            height: 40px;
+            padding: 0 14px 0 38px;
+            border: 1.5px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 13.5px;
+            outline: none;
+        }
+
+        .search-input:focus {
+            border-color: var(--primary);
+        }
+
+        .btn-create-patient {
+            height: 40px;
+            padding: 0 18px;
+            background: var(--primary);
+            color: #ffffff;
+            border: none;
+            border-radius: 8px;
+            font-size: 13.5px;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+        }
+
+        .btn-create-patient:hover {
+            background: var(--primary-hover);
+        }
+
+        /* TABLE */
+        .table-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13.5px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f8fafc;
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border-color);
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        td {
+            padding: 14px 16px;
+            border-bottom: 1px solid var(--border-color);
+            vertical-align: middle;
+        }
+
+        tr:hover td {
+            background-color: #f8fafc;
+        }
+
+        .badge-code {
+            display: inline-block;
+            font-weight: 700;
+            color: var(--primary);
+            background: #e0f2fe;
+            padding: 3px 8px;
+            border-radius: 6px;
+            font-size: 12px;
+        }
+
+        .badge-bhyt {
+            background: #d1fae5;
+            color: #065f46;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 11.5px;
+            font-weight: 600;
+        }
+
+        .table-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-tbl {
+            padding: 6px 10px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            transition: all 0.2s;
+        }
+
+        .btn-view-emr {
+            background: #e0f2fe;
+            color: #0284c7;
+        }
+
+        .btn-view-emr:hover {
+            background: #bae6fd;
+        }
+
+        .btn-edit {
+            background: #fef3c7;
+            color: #b45309;
+        }
+
+        .btn-edit:hover {
+            background: #fde68a;
+        }
+
+        /* MODAL COMMON */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(15, 23, 42, 0.55);
+            backdrop-filter: blur(4px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1001; /* Lớn hơn z-index của sidebar */
+            padding: 20px;
+        }
+
+        .modal-box {
+            background: var(--card-bg);
+            width: 100%;
+            max-width: 680px;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+
+        .modal-header {
+            padding: 18px 24px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .modal-header h3 {
+            font-size: 17px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .modal-body {
+            padding: 24px;
+            max-height: 72vh;
+            overflow-y: auto;
+        }
+
+        .form-grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+            margin-bottom: 14px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            margin-bottom: 14px;
+        }
+
+        .form-group label {
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .form-control {
+            height: 40px;
+            padding: 0 12px;
+            border: 1.5px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 13.5px;
+            outline: none;
+        }
+
+        .form-control:focus {
+            border-color: var(--primary);
+        }
+
+        .modal-footer {
+            padding: 16px 24px;
+            background: #f8fafc;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
+        .btn-cancel {
+            height: 40px;
+            padding: 0 16px;
+            border: 1px solid var(--border-color);
+            background: #ffffff;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .btn-save {
+            height: 40px;
+            padding: 0 20px;
+            background: var(--primary);
+            color: #ffffff;
+            border: none;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        /* EMR TIMELINE CARD */
+        .emr-header-box {
+            background: #f0f9ff;
+            border: 1px solid #bae6fd;
+            border-radius: 8px;
+            padding: 14px;
+            margin-bottom: 18px;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            font-size: 13px;
+        }
+
+        .emr-item {
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 14px;
+            margin-bottom: 12px;
+            background: #ffffff;
+        }
+
+        .emr-item-top {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12.5px;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+            border-bottom: 1px dashed var(--border-color);
+            padding-bottom: 6px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Sidebar Menu chuẩn 10 phân hệ -->
+    <aside class="sidebar">
+        <!-- Nút 3 gạch mở menu -->
+        <div class="hamburger-menu">
+            <i class="fa-solid fa-bars"></i>
+        </div>
+        
+        <div class="sidebar-brand">
+            <i class="fa-solid fa-hospital"></i>
+            <span class="link-text">MEDICARE HIS</span>
+        </div>
+        
+        <ul class="sidebar-menu">
+            <li>
+                <a href="/dashboard.html">
+                    <i class="fa-solid fa-chart-pie"></i> 
+                    <span class="link-text">Bảng điều khiển</span>
+                </a>
+            </li>
+            <li>
+                <a href="/appointments.html">
+                    <i class="fa-solid fa-calendar-check"></i> 
+                    <span class="link-text">Đặt lịch & Tiếp đón</span>
+                </a>
+            </li>
+            <li>
+                <a href="/patients.html" class="active">
+                    <i class="fa-solid fa-hospital-user"></i> 
+                    <span class="link-text">Quản lý Bệnh nhân</span>
+                </a>
+            </li>
+            <li>
+                <a href="/doctors.html">
+                    <i class="fa-solid fa-user-doctor"></i> 
+                    <span class="link-text">Danh sách Nhân viên</span>
+                </a>
+            </li>
+            <li>
+                <a href="/examination.html">
+                    <i class="fa-solid fa-stethoscope"></i> 
+                    <span class="link-text">Tiếp đón & Khám bệnh</span>
+                </a>
+            </li>
+            <li>
+                <a href="/laboratory.html">
+                    <i class="fa-solid fa-flask-vial"></i> 
+                    <span class="link-text">Cận lâm sàng (CLS)</span>
+                </a>
+            </li>
+            <li>
+                <a href="/pharmacy.html">
+                    <i class="fa-solid fa-pills"></i> 
+                    <span class="link-text">Kho Dược & Đơn thuốc</span>
+                </a>
+            </li>
+            <li>
+                <a href="/inpatient.html">
+                    <i class="fa-solid fa-bed-pulse"></i> 
+                    <span class="link-text">Quản lý Giường bệnh</span>
+                </a>
+            </li>
+            <li>
+                <a href="/billing.html">
+                    <i class="fa-solid fa-file-invoice-dollar"></i> 
+                    <span class="link-text">Hóa đơn Viện phí</span>
+                </a>
+            </li>
+            <li>
+                <a href="/settings.html">
+                    <i class="fa-solid fa-gear"></i> 
+                    <span class="link-text">Cấu hình hệ thống</span>
+                </a>
+            </li>
+            <li>
+                <a href="/referrals.html">
+                    <i class="fa-solid fa-arrows-turn-right"></i> 
+                    <span class="link-text">Chuyển khoa & Hội chẩn</span>
+                </a>
+            </li>
+        </ul>
+    </aside>
+
+    <!-- Main Container -->
+    <div class="main-container">
+        <!-- Top Header -->
+        <header class="top-header">
+            <div class="header-title">
+                <h2>Hồ Sơ Bệnh Nhân & Bệnh Án Điện Tử (EMR)</h2>
+            </div>
+            <button class="btn-logout" onclick="logout()">
+                <i class="fa-solid fa-arrow-right-from-bracket"></i> Đăng xuất
+            </button>
+        </header>
+
+        <!-- Main Body Content -->
+        <main class="content-body">
+            <!-- Thanh tác vụ & Tìm kiếm bệnh nhân (UC26) -->
+            <div class="action-bar">
+                <div class="search-box">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <input type="text" id="patientSearchInput" class="search-input"
+                        placeholder="Tra cứu CCCD, Mã BHYT, Tên hoặc SĐT..." onkeyup="filterPatients()">
+                </div>
+                <div class="doctor-record-tabs" id="doctorRecordTabs" style="display:none;" role="tablist"
+                    aria-label="Nhóm hồ sơ bệnh nhân">
+                    <button type="button" class="active" data-view="current"
+                        onclick="switchDoctorPatientView('current', this)">Bệnh nhân có lịch hẹn</button>
+                    <button type="button" data-view="history" onclick="switchDoctorPatientView('history', this)">Lịch sử
+                        khám</button>
+                </div>
+                <button class="btn-create-patient" onclick="openCreateModal()">
+                    <i class="fa-solid fa-user-plus"></i> Tạo Hồ Sơ Bệnh Nhân Mới (UC24)
+                </button>
+            </div>
+
+            <!-- Bảng danh sách bệnh nhân -->
+            <div class="table-card">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Mã BN</th>
+                            <th>Họ và Tên</th>
+                            <th>Ngày Sinh / Tuổi</th>
+                            <th>Giới Tính</th>
+                            <th>Số CCCD</th>
+                            <th>Số Điện Thoại</th>
+                            <th>Bảo Hiểm Y Tế</th>
+                            <th>Thao Tác</th>
+                        </tr>
+                    </thead>
+                    <tbody id="patientTableBody">
+                        <!-- Render bằng Javascript -->
+                    </tbody>
+                </table>
+            </div>
+        </main>
+    </div>
+
+    <!-- MODAL TẠO / CẬP NHẬT HỒ SƠ BỆNH NHÂN (MẪU QLBN_BM1) -->
+    <div class="modal-overlay" id="patientModal">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h3 id="modalTitle"><i class="fa-solid fa-id-card" style="color:var(--primary);"></i> Tạo Hồ Sơ Bệnh
+                    Nhân (Mẫu QLBN_BM1)</h3>
+                <button type="button" style="background:none; border:none; font-size:20px; cursor:pointer;"
+                    onclick="closePatientModal()">&times;</button>
+            </div>
+            <form id="patientForm" onsubmit="handleSavePatient(event)">
+                <div class="modal-body">
+                    <div class="form-grid-2">
+                        <div class="form-group">
+                            <label>Mã Bệnh Nhân (Tự động sinh)</label>
+                            <input type="text" id="fMaBN" class="form-control" readonly
+                                style="background:#f1f5f9; font-weight:700; color:var(--primary);">
+                        </div>
+                        <div class="form-group">
+                            <label>Họ và Tên Bệnh Nhân *</label>
+                            <input type="text" id="fHoTen" class="form-control" placeholder="Ví dụ: Nguyễn Văn An"
+                                required>
+                        </div>
+                    </div>
+
+                    <div class="form-grid-2">
+                        <div class="form-group">
+                            <label>Ngày Tháng Năm Sinh *</label>
+                            <input type="date" id="fNgaySinh" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Giới Tính *</label>
+                            <select id="fGioiTinh" class="form-control" required>
+                                <option value="Nam">Nam</option>
+                                <option value="Nu">Nữ</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-grid-2">
+                        <div class="form-group">
+                            <label>Số CCCD / Định Danh *</label>
+                            <input type="text" id="fCCCD" class="form-control" placeholder="12 chữ số" required
+                                maxlength="12">
+                        </div>
+                        <div class="form-group">
+                            <label>Mã Thẻ BHYT (Nếu có)</label>
+                            <input type="text" id="fMaBHYT" class="form-control" placeholder="15 ký tự thẻ BHYT">
+                        </div>
+                    </div>
+
+                    <div class="form-grid-2">
+                        <div class="form-group">
+                            <label>Số Điện Thoại Liên Lạc *</label>
+                            <input type="tel" id="fSDT" class="form-control" placeholder="Ví dụ: 0912345678" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Nhóm Máu</label>
+                            <select id="fNhomMau" class="form-control">
+                                <option value="">Chưa xác định</option>
+                                <option value="O+">O+</option>
+                                <option value="A+">A+</option>
+                                <option value="B+">B+</option>
+                                <option value="AB+">AB+</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-grid-2">
+                        <div class="form-group">
+                            <label>Email</label>
+                            <input type="email" id="fEmail" class="form-control" placeholder="email@example.com">
+                        </div>
+                        <div class="form-group">
+                            <label>Nghề nghiệp</label>
+                            <input type="text" id="fNgheNghiep" class="form-control" placeholder="Nghề nghiệp hiện tại">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Địa Chỉ Thường Trú</label>
+                        <input type="text" id="fDiaChi" class="form-control"
+                            placeholder="Số nhà, Phường/Xã, Quận/Huyện, Tỉnh/TP">
+                    </div>
+
+                    <div class="form-grid-2">
+                        <div class="form-group">
+                            <label>Người Liên Hệ Khẩn Cấp</label>
+                            <input type="text" id="fNguoiThan" class="form-control"
+                                placeholder="Họ tên thân nhân / Mối quan hệ">
+                        </div>
+                        <div class="form-group">
+                            <label>Quan hệ với người liên hệ</label>
+                            <input type="text" id="fQuanHe" class="form-control" placeholder="Ví dụ: Bố, mẹ, vợ/chồng">
+                        </div>
+                        <div class="form-group">
+                            <label>SĐT Người Thân Khẩn Cấp</label>
+                            <input type="tel" id="fSDTThan" class="form-control" placeholder="SĐT liên hệ khẩn cấp">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Tiền sử bệnh nền</label>
+                        <textarea id="fBenhNen" class="form-control" maxlength="500"
+                            placeholder="Thông tin bệnh nền"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Tiền sử dị ứng</label>
+                        <textarea id="fDiUng" class="form-control" maxlength="500"
+                            placeholder="Thông tin dị ứng"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn-cancel" onclick="closePatientModal()">Hủy Bỏ</button>
+                    <button type="submit" class="btn-save" id="btnSavePatient">
+                        <i class="fa-solid fa-floppy-disk"></i> Lưu Hồ Sơ
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL XEM LỊCH SỬ BỆNH ÁN & ĐƠN THUỐC / CLS CŨ (UC28, UC29) -->
+    <div class="modal-overlay" id="emrModal">
+        <div class="modal-box" style="max-width: 760px;">
+            <div class="modal-header">
+                <h3><i class="fa-solid fa-notes-medical" style="color:var(--primary);"></i> Lịch Sử Khám Bệnh & Đơn
+                    Thuốc / CLS (Mã: <span id="emrMaBN"></span>)</h3>
+                <button type="button" style="background:none; border:none; font-size:20px; cursor:pointer;"
+                    onclick="closeEmrModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="emr-header-box">
+                    <div>Bệnh nhân: <strong id="emrHoTen">---</strong></div>
+                    <div>Số CCCD: <strong id="emrCCCD">---</strong></div>
+                    <div>Thẻ BHYT: <strong id="emrBHYT">---</strong></div>
+                    <div style="grid-column: span 3; color: var(--danger); font-weight:600;">
+                        <i class="fa-solid fa-triangle-exclamation"></i> Cảnh báo dị ứng: <span id="emrDiUng">Không
+                            có</span>
+                    </div>
+                </div>
+
+                <h4 style="font-size: 15px; margin-bottom: 12px; display:flex; align-items:center; gap:8px;">
+                    <i class="fa-solid fa-clock-rotate-left" style="color:var(--primary);"></i> Danh Sách Các Lần Khám
+                    Trước
+                </h4>
+
+                <div id="emrHistoryList">
+                    <!-- Render các lần khám cũ bằng JS -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-cancel" onclick="closeEmrModal()">Đóng</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- SCRIPT NGHIỆP VỤ BỆNH NHÂN -->
+    <script>
+        let patients = [];
+        let isEditMode = false;
+        let doctorAppointments = [];
+        let doctorExaminations = [];
+        let doctorPatientView = 'current';
+        let patientProfileMissing = false;
+
+        function isPatientUser() {
+            try {
+                return ['BenhNhan', 'PATIENT'].includes(
+                    JSON.parse(sessionStorage.getItem('authenticatedUser') || '{}').vaiTro
+                );
+            } catch (error) {
+                return false;
+            }
+        }
+
+        function isDoctorUser() {
+            try {
+                const role = JSON.parse(sessionStorage.getItem('authenticatedUser') || '{}').vaiTro;
+                return role === 'BacSi' || role === 'DOCTOR';
+            } catch (error) {
+                return false;
+            }
+        }
+
+        // Bệnh nhân có lịch hẹn và lịch sử khám
+        async function loadPatients() {
+            try {
+                if (isPatientUser()) {
+                    document.querySelector('.search-box').style.display = 'none';
+                    document.getElementById('doctorRecordTabs').style.display = 'none';
+                    const response = await fetch('/api/v1/benhnhan/me');
+                    if (response.status === 404) {
+                        patients = [];
+                        patientProfileMissing = true;
+                    } else if (!response.ok) {
+                        throw new Error('Không thể tải hồ sơ cá nhân.');
+                    } else {
+                        const item = await response.json();
+                        patientProfileMissing = false;
+                        patients = [mapPatient(item)];
+                    }
+                    document.querySelector('.btn-create-patient').innerHTML = patientProfileMissing
+                        ? '<i class="fa-solid fa-user-plus"></i> Tạo hồ sơ cá nhân'
+                        : '<i class="fa-solid fa-user-pen"></i> Cập nhật hồ sơ cá nhân';
+                    document.querySelector('.btn-create-patient').style.display = 'inline-flex';
+                    renderPatients();
+                    return;
+                }
+
+                const requests = [fetch('/api/v1/benhnhan')];
+                if (isDoctorUser()) {
+                    requests.push(fetch('/api/v1/lichhen/me'), fetch('/api/v1/phieukham/me'));
+                }
+                const responses = await Promise.all(requests);
+                const response = responses[0];
+                const appointmentsResponse = responses[1];
+                const examinationsResponse = responses[2];
+                if (!response.ok) throw new Error('Failed to load patients');
+                const data = await response.json();
+
+                if (isDoctorUser()) {
+                    if (!appointmentsResponse.ok || !examinationsResponse.ok) {
+                        throw new Error('Không thể tải hàng đợi hoặc lịch sử khám của bác sĩ.');
+                    }
+                    doctorAppointments = (await appointmentsResponse.json()).filter(appointment =>
+                        !['DaKham', 'DaHuy'].includes(appointment.trangThai)
+                    );
+                    doctorExaminations = await examinationsResponse.json();
+                    document.getElementById('doctorRecordTabs').style.display = 'inline-flex';
+                    document.querySelector('.btn-create-patient')?.remove();
+                    document.querySelector('.top-header .header-title h2').textContent = 'Tra cứu hồ sơ bệnh nhân';
+                    document.getElementById('patientSearchInput').placeholder = 'Tìm theo CCCD, mã BHYT, tên hoặc số điện thoại';
+                }
+
+                patients = data.map(mapPatient);
+
+                renderPatients(isDoctorUser() ? getDoctorPatientList() : patients);
+            } catch (error) {
+                console.error(error);
+                const tbody = document.getElementById('patientTableBody');
+                if (tbody) {
+                    tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding:20px; color:var(--danger);">Không thể tải dữ liệu bệnh nhân từ cơ sở dữ liệu.</td></tr>`;
+                }
+            }
+        }
+
+        function mapPatient(item) {
+            return {
+                maBN: item.maBenhNhan,
+                hoTen: item.hoTen,
+                ngaySinh: item.ngaySinh,
+                gioiTinh: item.gioiTinh,
+                cccd: item.soCCCD || '',
+                sdt: item.soDienThoai || '',
+                maBHYT: item.maBHYT || '',
+                nhomMau: item.nhomMau || 'Chưa xác định',
+                diaChi: item.diaChi || '',
+                email: item.email || '',
+                ngheNghiep: item.ngheNghiep || '',
+                nguoiThan: item.nguoiLienHeKhanCap || '',
+                quanHe: item.quanHeNguoiLienHe || '',
+                sdtThan: item.sdtNguoiLienHe || '',
+                benhNen: item.tienSuBenhNen || '',
+                diUng: item.tienSuDiUng || '',
+                history: []
+            };
+        }
+
+        function generatePatientId() {
+            const nextSeq = String(patients.length + 1).padStart(6, '0');
+            return `BN2026${nextSeq}`;
+        }
+
+        function calculateAge(dateString) {
+            if (!dateString) return '';
+            const today = new Date();
+            const birthDate = new Date(dateString);
+            let age = today.getFullYear() - birthDate.getFullYear();
+            const m = today.getMonth() - birthDate.getMonth();
+            if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+                age--;
+            }
+            return age;
+        }
+
+        function renderPatients(dataList = patients) {
+            const tbody = document.getElementById('patientTableBody');
+            tbody.innerHTML = '';
+
+            if (dataList.length === 0) {
+                const emptyMessage = isPatientUser()
+                    ? 'Bạn chưa có hồ sơ bệnh nhân. Hãy tạo hồ sơ cá nhân để tiếp tục.'
+                    : isDoctorUser() && doctorPatientView === 'current'
+                        ? 'Chưa có bệnh nhân nào có lịch hẹn khám với bạn.'
+                        : (isDoctorUser() ? 'Chưa có bệnh nhân nào trong lịch sử khám của bạn.' : 'Không tìm thấy hồ sơ bệnh nhân phù hợp');
+                tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding:20px; color:var(--text-muted);">${emptyMessage}</td></tr>`;
+                return;
+            }
+
+            const isDoctor = isDoctorUser();
+            dataList.forEach(p => {
+                const age = calculateAge(p.ngaySinh);
+                const bhytBadge = p.maBHYT
+                    ? `<span class="badge-bhyt"><i class="fa-solid fa-shield-halved"></i> ${p.maBHYT}</span>`
+                    : `<span style="color:var(--text-muted); font-size:12px;">Viện phí thường</span>`;
+                const doctorStatus = isDoctor && p.doctorStatus
+                    ? `<div style="font-size:12px; color:var(--primary); margin-top:4px;">${p.doctorStatus}</div>` : '';
+
+                tbody.innerHTML += `
+                    <tr>
+                        <td><span class="badge-code">${p.maBN}</span></td>
+                        <td><strong>${p.hoTen}</strong>${doctorStatus}</td>
+                        <td>${p.ngaySinh} <small>(${age} tuổi)</small></td>
+                        <td>${p.gioiTinh === 'Nu' ? 'Nữ' : p.gioiTinh}</td>
+                        <td>${p.cccd}</td>
+                        <td>${p.sdt}</td>
+                        <td>${bhytBadge}</td>
+                        <td>
+                            <div class="table-actions">
+                                <button class="btn-tbl btn-view-emr" onclick="viewPatientEMR('${p.maBN}')" title="Xem lịch sử bệnh án">
+                                    <i class="fa-solid fa-book-medical"></i> Bệnh Án
+                                </button>
+                                ${isDoctor ? '' : `<button class="btn-tbl btn-edit" onclick="openEditModal('${p.maBN}')" title="Sửa thông tin">
+                                    <i class="fa-solid fa-pen-to-square"></i> Sửa
+                                </button>`}
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        function filterPatients() {
+            const kw = document.getElementById('patientSearchInput').value.trim().toLowerCase();
+            const source = getDoctorPatientList();
+            const filtered = source.filter(p =>
+                p.hoTen.toLowerCase().includes(kw) ||
+                p.cccd.includes(kw) ||
+                p.sdt.includes(kw) ||
+                p.maBN.toLowerCase().includes(kw) ||
+                (p.maBHYT && p.maBHYT.toLowerCase().includes(kw))
+            );
+            renderPatients(filtered);
+        }
+
+        function getDoctorPatientList() {
+            if (!isDoctorUser()) return patients;
+            if (doctorPatientView === 'current') {
+                const currentIds = new Set(doctorAppointments.map(appointment => appointment.maBenhNhan));
+                return patients.filter(patient => currentIds.has(patient.maBN));
+            }
+            const currentIds = new Set(doctorAppointments.map(appointment => appointment.maBenhNhan));
+            const historyIds = new Set(doctorExaminations.map(examination => examination.maBenhNhan));
+            return patients.filter(patient => historyIds.has(patient.maBN) && !currentIds.has(patient.maBN));
+        }
+
+        function switchDoctorPatientView(view, button) {
+            doctorPatientView = view;
+            document.querySelectorAll('.doctor-record-tabs button').forEach(tab => tab.classList.remove('active'));
+            button.classList.add('active');
+            document.getElementById('patientSearchInput').value = '';
+            renderPatients(getDoctorPatientList());
+        }
+
+        function openCreateModal() {
+            if (isDoctorUser()) return;
+            if (isPatientUser() && !patientProfileMissing) {
+                openEditModal(patients[0]?.maBN);
+                return;
+            }
+            isEditMode = false;
+            document.getElementById('patientForm').reset();
+            document.getElementById('modalTitle').innerHTML = isPatientUser()
+                ? '<i class="fa-solid fa-user-plus" style="color:var(--primary);"></i> Tạo hồ sơ cá nhân'
+                : '<i class="fa-solid fa-user-plus" style="color:var(--primary);"></i> Tạo Hồ Sơ Bệnh Nhân Mới (Mẫu QLBN_BM1)';
+            document.getElementById('fMaBN').value = isPatientUser() ? '' : generatePatientId();
+            document.getElementById('fNgaySinh').max = new Date().toISOString().split('T')[0];
+            
+            const cccdInput = document.getElementById('fCCCD');
+            const bhytInput = document.getElementById('fMaBHYT');
+            cccdInput.readOnly = false;
+            cccdInput.style.backgroundColor = '#ffffff';
+            bhytInput.readOnly = false;
+            bhytInput.style.backgroundColor = '#ffffff';
+
+            document.getElementById('patientModal').style.display = 'flex';
+        }
+
+        function openEditModal(maBN) {
+            if (isDoctorUser()) return;
+            const p = patients.find(item => item.maBN === maBN);
+            if (!p) return;
+
+            isEditMode = true;
+            document.getElementById('modalTitle').innerHTML = '<i class="fa-solid fa-user-pen" style="color:var(--warning);"></i> Cập Nhật Thông Tin Bệnh Nhân (UC27)';
+            document.getElementById('fMaBN').value = p.maBN;
+            document.getElementById('fHoTen').value = p.hoTen;
+            document.getElementById('fNgaySinh').value = p.ngaySinh;
+            document.getElementById('fGioiTinh').value = p.gioiTinh;
+
+            const cccdInput = document.getElementById('fCCCD');
+            const bhytInput = document.getElementById('fMaBHYT');
+            cccdInput.value = p.cccd;
+            cccdInput.readOnly = true;
+            cccdInput.style.backgroundColor = '#f1f5f9';
+
+            bhytInput.value = p.maBHYT || '';
+            bhytInput.readOnly = true;
+            bhytInput.style.backgroundColor = '#f1f5f9';
+
+            document.getElementById('fSDT').value = p.sdt;
+            document.getElementById('fNhomMau').value = p.nhomMau || '';
+            document.getElementById('fDiaChi').value = p.diaChi || '';
+            document.getElementById('fEmail').value = p.email || '';
+            document.getElementById('fNgheNghiep').value = p.ngheNghiep || '';
+            document.getElementById('fNguoiThan').value = p.nguoiThan || '';
+            document.getElementById('fQuanHe').value = p.quanHe || '';
+            document.getElementById('fSDTThan').value = p.sdtThan || '';
+            document.getElementById('fBenhNen').value = p.benhNen || '';
+            document.getElementById('fDiUng').value = p.diUng || '';
+
+            if (isPatientUser()) {
+                [cccdInput, bhytInput].forEach(input => {
+                    input.readOnly = false;
+                    input.style.backgroundColor = '#ffffff';
+                });
+            }
+
+            document.getElementById('patientModal').style.display = 'flex';
+        }
+
+        function closePatientModal() {
+            document.getElementById('patientModal').style.display = 'none';
+        }
+
+        async function handleSavePatient(e) {
+            e.preventDefault();
+            if (isDoctorUser()) return;
+            const maBN = document.getElementById('fMaBN').value;
+            const hoTen = document.getElementById('fHoTen').value.trim();
+            const ngaySinh = document.getElementById('fNgaySinh').value;
+            const gioiTinh = document.getElementById('fGioiTinh').value;
+            const cccd = document.getElementById('fCCCD').value.trim();
+            const sdt = document.getElementById('fSDT').value.trim();
+            const maBHYT = document.getElementById('fMaBHYT').value.trim();
+            const nhomMau = document.getElementById('fNhomMau').value;
+            const diaChi = document.getElementById('fDiaChi').value.trim();
+            const email = document.getElementById('fEmail').value.trim();
+            const ngheNghiep = document.getElementById('fNgheNghiep').value.trim();
+            const nguoiThan = document.getElementById('fNguoiThan').value.trim();
+            const quanHe = document.getElementById('fQuanHe').value.trim();
+            const sdtThan = document.getElementById('fSDTThan').value.trim();
+            const benhNen = document.getElementById('fBenhNen').value.trim();
+            const diUng = document.getElementById('fDiUng').value.trim();
+            if (!ngaySinh) {
+                alert("Vui lòng chọn ngày tháng năm sinh!");
+                document.getElementById('fNgaySinh').focus();
+                return;
+            }
+            const today = new Date().toISOString().split('T')[0];
+            if (ngaySinh > today) {
+                alert("Ngày sinh không thể lớn hơn ngày hiện tại!");
+                document.getElementById('fNgaySinh').focus();
+                return;
+            }
+            const payload = {
+                maBenhNhan: isEditMode ? maBN : "",
+                hoTen: hoTen,
+                ngaySinh: ngaySinh,
+                gioiTinh: gioiTinh,
+                soCCCD: cccd,
+                soDienThoai: sdt,
+                maBHYT: maBHYT,
+                nhomMau: nhomMau ? nhomMau : null,
+                diaChi: diaChi,
+                email: email,
+                ngheNghiep: ngheNghiep,
+                nguoiLienHeKhanCap: nguoiThan,
+                quanHeNguoiLienHe: quanHe,
+                sdtNguoiLienHe: sdtThan,
+                tienSuBenhNen: benhNen,
+                tienSuDiUng: diUng
+            };
+
+            try {
+                if (isPatientUser()) {
+                    const res = await fetch('/api/v1/benhnhan/me', {
+                        method: isEditMode ? 'PUT' : 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    if (!res.ok) {
+                        const err = await res.text();
+                        alert("Không thể lưu hồ sơ cá nhân: " + err);
+                        return;
+                    }
+                } else if (!isEditMode) {
+                    const res = await fetch('/api/v1/benhnhan', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    if (!res.ok) {
+                        const err = await res.text();
+                        alert("Lỗi khi thêm bệnh nhân: " + err);
+                        return;
+                    }
+                    alert(`Tạo thành công hồ sơ bệnh nhân mới: ${hoTen} (Mã: ${maBN})!`);
+                } else {
+                    const res = await fetch(`/api/v1/benhnhan/${encodeURIComponent(maBN)}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    if (!res.ok) {
+                        const err = await res.text();
+                        alert("Lỗi khi cập nhật bệnh nhân: " + err);
+                        return;
+                    }
+                    alert(`Cập nhật thông tin bệnh nhân ${hoTen} thành công!`);
+                }
+
+                closePatientModal();
+                await loadPatients();
+            } catch (err) {
+                console.error(err);
+                alert("Không thể lưu bệnh nhân vào máy chủ!");
+            }
+        }
+
+        async function viewPatientEMR(maBN) {
+            const p = patients.find(item => item.maBN === maBN);
+            if (!p) return;
+
+            document.getElementById('emrMaBN').innerText = p.maBN;
+            document.getElementById('emrHoTen').innerText = p.hoTen;
+            document.getElementById('emrCCCD').innerText = p.cccd || 'Chưa cung cấp';
+            document.getElementById('emrBHYT').innerText = p.maBHYT || 'Không có (Khám dịch vụ)';
+            document.getElementById('emrDiUng').innerText = p.diUng;
+
+            const histContainer = document.getElementById('emrHistoryList');
+            histContainer.innerHTML = '<div style="text-align:center; padding:20px; color:var(--text-muted);"><i class="fa-solid fa-spinner fa-spin"></i> Đang tải hồ sơ bệnh án...</div>';
+            document.getElementById('emrModal').style.display = 'flex';
+
+            try {
+                const historyUrl = isPatientUser()
+                    ? '/api/v1/benhnhan/me/history'
+                    : `/api/v1/benhnhan/${encodeURIComponent(maBN)}/history`;
+                const res = await fetch(historyUrl);
+                const historyList = res.ok ? await res.json() : [];
+
+                histContainer.innerHTML = '';
+                if (historyList.length === 0) {
+                    histContainer.innerHTML = `<div style="text-align:center; padding:20px; color:var(--text-muted);">Bệnh nhân chưa có lịch sử khám bệnh trước đây.</div>`;
+                } else {
+                    historyList.forEach((h, idx) => {
+                        const dateStr = h.ngayKham ? new Date(h.ngayKham).toLocaleString('vi-VN') : 'Gần đây';
+                        histContainer.innerHTML += `
+                            <div class="emr-item">
+                                <div class="emr-item-top">
+                                    <span><i class="fa-solid fa-calendar-day"></i> Lần khám: <strong>${dateStr}</strong></span>
+                                    <span><i class="fa-solid fa-user-doctor"></i> ${h.bacSi || 'Bác sĩ điều trị'} (${h.khoa || 'Phòng khám'})</span>
+                                </div>
+                                <div style="font-size: 13.5px; line-height: 1.6;">
+                                    <div>Chẩn đoán: <strong style="color:var(--primary);">${h.chanDoan || 'Đang theo dõi'}</strong></div>
+                                    <div>Chỉ định & Kết quả CLS: <span>${h.cls || 'Không có'}</span></div>
+                                    <div>Đơn thuốc đã kê: <span style="color:#059669; font-weight:600;">${h.donThuoc || 'Không kê đơn'}</span></div>
+                                </div>
+                            </div>
+                        `;
+                    });
+                }
+            } catch (err) {
+                console.error(err);
+                histContainer.innerHTML = `<div style="text-align:center; padding:20px; color:var(--danger);">Lỗi khi tải lịch sử khám bệnh từ CSDL.</div>`;
+            }
+        }
+
+        function closeEmrModal() {
+            document.getElementById('emrModal').style.display = 'none';
+        }
+
+        function logout() {
+            sessionStorage.removeItem('authenticatedUser');
+            window.location.href = '/login.html';
+        }
+
+        window.onload = function () {
+            loadPatients();
+        };
+    </script>
+    <script src="/auth-guard.js?v=2"></script>
+</body>
+
+</html>

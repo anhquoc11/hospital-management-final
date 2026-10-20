@@ -1,0 +1,20 @@
+package com.nhom12.hospital.entity;
+
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+import java.math.BigDecimal;
+
+@Getter
+@Setter
+@NoArgsConstructor
+public class GiuongBenh {
+    private String maGiuong;
+    private String maPhong;
+    private String maKhoa; // from View
+    private String tenPhong; // from View
+    private String soGiuong;
+    private String trangThai = "Trong";
+    private BigDecimal donGiaNgay = BigDecimal.ZERO;
+}

@@ -1,0 +1,1029 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kho Dược & Quầy Cấp Phát Thuốc - MEDICARE HIS</title>
+    <!-- Fonts & Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <style>
+        :root {
+            --primary: #0284c7;
+            --primary-hover: #0369a1;
+            --sidebar-bg: #0f172a;
+            --bg-main: #f8fafc;
+            --card-bg: #ffffff;
+            --text-dark: #1e293b;
+            --text-muted: #64748b;
+            --border-color: #e2e8f0;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            display: flex;
+            min-height: 100vh;
+            background-color: var(--bg-main);
+            color: var(--text-dark);
+        }
+
+        /* SIDEBAR THU GỌN (HOVER TO EXPAND) */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100vh;
+            width: 70px; /* Thu gọn mặc định */
+            background-color: var(--sidebar-bg);
+            color: #cbd5e1;
+            display: flex;
+            flex-direction: column;
+            z-index: 1000;
+            overflow-x: hidden;
+            transition: width 0.3s ease; /* Hiệu ứng mở rộng trơn tru */
+            box-shadow: 2px 0 8px rgba(0,0,0,0.15);
+        }
+
+        .sidebar:hover {
+            width: 260px; /* Chiều rộng khi di chuột vào */
+        }
+
+        /* Icon 3 gạch (Hamburger) */
+        .hamburger-menu {
+            padding: 20px 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-bottom: 1px solid #1e293b;
+            color: white;
+            font-size: 20px;
+            transition: padding-left 0.3s ease, justify-content 0.3s ease;
+        }
+
+        .sidebar:hover .hamburger-menu {
+            justify-content: flex-start;
+            padding-left: 24px;
+        }
+
+        .sidebar-brand {
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: #ffffff;
+            font-size: 18px;
+            font-weight: 700;
+            white-space: nowrap; /* Không cho rớt dòng */
+        }
+
+        .sidebar-brand i {
+            color: #38bdf8;
+            font-size: 24px;
+            min-width: 24px;
+            text-align: center;
+        }
+
+        .sidebar-menu {
+            list-style: none;
+            padding: 16px 10px;
+            flex-grow: 1;
+        }
+
+        .sidebar-menu li {
+            margin-bottom: 4px;
+        }
+
+        .sidebar-menu a {
+            display: flex;
+            align-items: center;
+            padding: 12px 10px;
+            color: #94a3b8;
+            text-decoration: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s;
+            white-space: nowrap; /* Chữ không bị gãy dòng lúc đang thu gọn */
+        }
+
+        .sidebar-menu a:hover,
+        .sidebar-menu a.active {
+            background-color: var(--primary);
+            color: #ffffff;
+        }
+
+        .sidebar-menu a i {
+            min-width: 30px; /* Giữ icon luôn nằm đúng vị trí */
+            text-align: center;
+            font-size: 18px;
+        }
+
+        /* CSS ẩn/hiện chữ menu */
+        .link-text {
+            opacity: 0;
+            transition: opacity 0.2s ease;
+            margin-left: 8px;
+        }
+
+        .sidebar:hover .link-text {
+            opacity: 1;
+        }
+
+        /* MAIN CONTAINER */
+        .main-container {
+            margin-left: 70px; /* Bỏ trống 70px cố định cho Sidebar lúc thu gọn */
+            width: calc(100% - 70px);
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+        }
+
+        .top-header {
+            background-color: var(--card-bg);
+            border-bottom: 1px solid var(--border-color);
+            padding: 16px 32px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .header-title h2 {
+            font-size: 20px;
+            font-weight: 700;
+        }
+
+        .btn-profile {
+            background: #e2e8f0;
+            color: #1e293b;
+            border: none;
+            padding: 8px 14px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .btn-logout {
+            background: #fee2e2;
+            color: #ef4444;
+            border: none;
+            padding: 8px 14px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .content-body {
+            padding: 24px 32px;
+        }
+
+        /* TAB BAR */
+        .tab-bar {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 8px;
+        }
+
+        .tab-btn {
+            background: none;
+            border: none;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-muted);
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+        }
+
+        .tab-btn.active {
+            background: #e0f2fe;
+            color: var(--primary);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* ACTIONS BAR */
+        .action-bar {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 16px 20px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .search-box {
+            position: relative;
+            display: flex;
+            align-items: center;
+            width: 360px;
+        }
+
+        .search-box i {
+            position: absolute;
+            left: 14px;
+            color: var(--text-muted);
+            font-size: 14px;
+        }
+
+        .search-input {
+            width: 100%;
+            height: 40px;
+            padding: 0 14px 0 38px;
+            border: 1.5px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 13.5px;
+            outline: none;
+        }
+
+        .search-input:focus {
+            border-color: var(--primary);
+        }
+
+        .btn-action {
+            height: 40px;
+            padding: 0 18px;
+            border-radius: 8px;
+            font-size: 13.5px;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            border: none;
+            transition: all 0.2s;
+        }
+
+        .btn-import {
+            background: #059669;
+            color: #ffffff;
+        }
+        .btn-import:hover { background: #047857; }
+
+        /* TABLE */
+        .table-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13.5px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f8fafc;
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border-color);
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        td {
+            padding: 14px 16px;
+            border-bottom: 1px solid var(--border-color);
+            vertical-align: middle;
+        }
+
+        tr:hover td {
+            background-color: #f8fafc;
+        }
+
+        .badge-code {
+            font-weight: 700;
+            color: var(--primary);
+            background: #e0f2fe;
+            padding: 3px 8px;
+            border-radius: 6px;
+            font-size: 12px;
+        }
+
+        .badge-status {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 6px;
+            font-size: 11.5px;
+            font-weight: 600;
+        }
+        .status-pending { background: #fef3c7; color: #b45309; }
+        .status-dispensed { background: #d1fae5; color: #065f46; }
+
+        .btn-dispense {
+            padding: 6px 12px;
+            background: #0284c7;
+            color: #ffffff;
+            border: none;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .btn-dispense:hover { background: #0369a1; }
+
+        /* MODAL */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(15, 23, 42, 0.55);
+            backdrop-filter: blur(4px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1001; /* Lớn hơn z-index của sidebar */
+            padding: 20px;
+        }
+
+        .modal-box {
+            background: var(--card-bg);
+            width: 100%;
+            max-width: 680px;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+
+        .modal-header {
+            padding: 18px 24px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .modal-header h3 {
+            font-size: 17px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .modal-body {
+            padding: 24px;
+            max-height: 75vh;
+            overflow-y: auto;
+        }
+
+        .form-grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+            margin-bottom: 14px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            margin-bottom: 14px;
+        }
+
+        .form-group label {
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .form-control {
+            height: 40px;
+            padding: 0 12px;
+            border: 1.5px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 13.5px;
+            outline: none;
+        }
+
+        .form-control:focus {
+            border-color: var(--primary);
+        }
+
+        .modal-footer {
+            padding: 16px 24px;
+            background: #f8fafc;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
+        .btn-cancel {
+            height: 40px;
+            padding: 0 16px;
+            border: 1px solid var(--border-color);
+            background: #ffffff;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .btn-save {
+            height: 40px;
+            padding: 0 20px;
+            background: var(--primary);
+            color: #ffffff;
+            border: none;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Sidebar Menu chuẩn 10 phân hệ -->
+    <aside class="sidebar">
+        <!-- Nút 3 gạch mở menu -->
+        <div class="hamburger-menu">
+            <i class="fa-solid fa-bars"></i>
+        </div>
+
+        <div class="sidebar-brand">
+            <i class="fa-solid fa-hospital"></i>
+            <span class="link-text">MEDICARE HIS</span>
+        </div>
+        <ul class="sidebar-menu">
+            <li><a href="/dashboard.html"><i class="fa-solid fa-chart-pie"></i> <span class="link-text">Bảng điều khiển</span></a></li>
+            <li><a href="/appointments.html"><i class="fa-solid fa-calendar-check"></i> <span class="link-text">Đặt lịch & Tiếp đón</span></a></li>
+            <li><a href="/patients.html"><i class="fa-solid fa-hospital-user"></i> <span class="link-text">Quản lý Bệnh nhân</span></a></li>
+            <li><a href="/doctors.html"><i class="fa-solid fa-user-doctor"></i> <span class="link-text">Danh sách Bác sĩ</span></a></li>
+            <li><a href="/examination.html"><i class="fa-solid fa-stethoscope"></i> <span class="link-text">Tiếp đón & Khám bệnh</span></a></li>
+            <li><a href="/laboratory.html"><i class="fa-solid fa-flask-vial"></i> <span class="link-text">Cận lâm sàng (CLS)</span></a></li>
+            <li><a href="/pharmacy.html" class="active"><i class="fa-solid fa-pills"></i> <span class="link-text">Kho Dược & Đơn thuốc</span></a></li>
+            <li><a href="/inpatient.html"><i class="fa-solid fa-bed-pulse"></i> <span class="link-text">Quản lý Giường bệnh</span></a></li>
+            <li><a href="/billing.html"><i class="fa-solid fa-file-invoice-dollar"></i> <span class="link-text">Hóa đơn Viện phí</span></a></li>
+            <li><a href="/settings.html"><i class="fa-solid fa-gear"></i> <span class="link-text">Cấu hình hệ thống</span></a></li>
+            <li><a href="/referrals.html"><i class="fa-solid fa-arrows-turn-right"></i> <span class="link-text">Chuyển khoa & Hội chẩn</span></a></li>
+        </ul>
+    </aside>
+
+    <!-- Main Container -->
+    <div class="main-container">
+        <!-- Top Header -->
+        <header class="top-header">
+            <div class="header-title">
+                <h2>Kho Dược Bệnh Viện & Quầy Xuất Thuốc Theo Đơn</h2>
+            </div>
+            <div style="display: flex; gap: 10px;">
+                <button class="btn-logout" onclick="logout()">
+                    <i class="fa-solid fa-arrow-right-from-bracket"></i> Đăng xuất
+                </button>
+            </div>
+        </header>
+
+        <!-- Content Body -->
+        <main class="content-body">
+            <!-- Tab chuyển đổi -->
+            <div class="tab-bar">
+                <button class="tab-btn active" onclick="switchTab('inventoryTab', this)">
+                    <i class="fa-solid fa-boxes-stacked"></i> Danh Mục & Tồn Kho Thuốc (UC44)
+                </button>
+                <button class="tab-btn" onclick="switchTab('dispenseTab', this)">
+                    <i class="fa-solid fa-receipt"></i> Cấp Phát Thuốc Theo Đơn (UC46, UC48)
+                </button>
+            </div>
+
+            <!-- TAB 1: DANH MỤC & TỒN KHO THUỐC (UC44, UC45, UC51) -->
+            <div id="inventoryTab" class="tab-content active">
+                <div class="action-bar">
+                    <div class="search-box">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                        <input type="text" id="drugSearchInput" class="search-input"
+                               placeholder="Tìm tên thuốc, mã thuốc, hoạt chất..."
+                               onkeyup="filterDrugs()">
+                    </div>
+                    <button class="btn-action btn-import" onclick="openImportModal()">
+                        <i class="fa-solid fa-file-import"></i> Nhập Kho Thuốc Mới (Mẫu QLDK_BM1)
+                    </button>
+                </div>
+
+                <div class="table-card">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Mã Thuốc</th>
+                                <th>Tên Thuốc / Biệt Dược</th>
+                                <th>Đơn Vị Tính</th>
+                                <th>Đơn Giá Bán (VNĐ)</th>
+                                <th>Số Lượng Tồn Kho</th>
+                                <th>Trạng Thái Kho</th>
+                            </tr>
+                        </thead>
+                        <tbody id="drugTableBody">
+                            <!-- Render bằng JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- TAB 2: CẤP PHÁT THUỐC THEO ĐƠN (UC46, UC48) -->
+            <div id="dispenseTab" class="tab-content">
+                <div class="table-card" style="padding: 20px;">
+                    <h3 style="font-size: 16px; font-weight: 700; margin-bottom: 16px; display:flex; align-items:center; gap:8px;">
+                        <i class="fa-solid fa-clipboard-list" style="color:var(--primary);"></i> Danh Sách Đơn Thuốc Chờ Cấp Phát
+                    </h3>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Mã Đơn Thuốc</th>
+                                <th>Bệnh Nhân</th>
+                                <th>Bác Sĩ Kê Đơn</th>
+                                <th>Chi Tiết Thuốc Kê</th>
+                                <th>Trạng Thái</th>
+                                <th>Thao Tác</th>
+                            </tr>
+                        </thead>
+                        <tbody id="prescriptionTableBody">
+                            <!-- Render danh sách đơn thuốc chờ xuất -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- MODAL NHẬP KHO THUỐC MẪU QLDK_BM1 (UC45, UC51) -->
+    <div class="modal-overlay" id="importModal">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h3><i class="fa-solid fa-truck-ramp-box" style="color:var(--primary);"></i> Lập Phiếu Nhập Kho Thuốc (Mẫu QLDK_BM1)</h3>
+                <button type="button" style="background:none; border:none; font-size:20px; cursor:pointer;" onclick="closeImportModal()">&times;</button>
+            </div>
+            <form onsubmit="handleImportDrug(event)">
+                <div class="modal-body">
+                    <div class="form-grid-2">
+                        <div class="form-group">
+                            <label>Mã Phiếu Nhập *</label>
+                            <input type="text" id="impCode" class="form-control" readonly style="background:#f1f5f9; font-weight:700; color:var(--primary);">
+                        </div>
+                        <div class="form-group">
+                            <label>Ngày Nhập Kho *</label>
+                            <input type="date" id="impDate" class="form-control" required>
+                        </div>
+                    </div>
+
+                    <!-- Quản lý Nhà Cung Cấp (UC51) -->
+                    <div class="form-grid-2">
+                        <div class="form-group">
+                            <label>Nhà Cung Cấp (UC51) *</label>
+                            <select id="impSupplier" class="form-control" required>
+                                <option value="Công ty Cổ phần Dược Hậu Giang (DHG Pharma)">DHG Pharma (Dược Hậu Giang)</option>
+                                <option value="Công ty Cổ phần Traphaco">Traphaco</option>
+                                <option value="Công ty Dược phẩm Sanofi-Aventis VN">Sanofi-Aventis Việt Nam</option>
+                                <option value="Tổng Công ty Dược Việt Nam (Vinapharm)">Vinapharm</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Số Hóa Đơn NCC *</label>
+                            <input type="text" id="impInvoiceNo" class="form-control" placeholder="Ví dụ: HD-DHG-9982" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Chọn Thuốc Nhập Kho *</label>
+                        <select id="impDrugId" class="form-control" required>
+                            <option value="MED-001">Paracetamol 500mg (Viên nén)</option>
+                            <option value="MED-002">Amoxicillin 500mg (Kháng sinh viên nang)</option>
+                            <option value="MED-003">Panadol Extra (Viên nén)</option>
+                            <option value="MED-004">Berberin 100mg (Viên bao đường)</option>
+                            <option value="MED-005">Vitamin C 500mg (Viên sủi)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-grid-2">
+                        <div class="form-group">
+                            <label>Số Lô Sản Xuất *</label>
+                            <input type="text" id="impBatch" class="form-control" placeholder="Ví dụ: L2026-09A" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Hạn Sử Dụng *</label>
+                            <input type="date" id="impExpiry" class="form-control" required>
+                        </div>
+                    </div>
+
+                    <div class="form-grid-2">
+                        <div class="form-group">
+                            <label>Số Lượng Nhập *</label>
+                            <input type="number" id="impQty" class="form-control" min="1" placeholder="Nhập số lượng..." required>
+                        </div>
+                        <div class="form-group">
+                            <label>Đơn Giá Nhập (VNĐ) *</label>
+                            <input type="number" id="impPrice" class="form-control" min="100" placeholder="Đơn giá nhập kho..." required>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn-cancel" onclick="closeImportModal()">Hủy Bỏ</button>
+                    <button type="submit" class="btn-save" style="background:#059669;">
+                        <i class="fa-solid fa-check"></i> Xác Nhận Nhập Kho (Tăng Tồn Kho)
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL THÔNG TIN CÁ NHÂN -->
+    <div class="modal-overlay" id="profileModal">
+        <div class="modal-box" style="max-width: 500px;">
+            <div class="modal-header">
+                <h3><i class="fa-solid fa-user-pen" style="color:var(--primary);"></i> Cập Nhật Thông Tin & Mật Khẩu</h3>
+                <button type="button" style="background:none; border:none; font-size:20px; cursor:pointer;" onclick="closeProfileModal()">&times;</button>
+            </div>
+            
+            <div class="tab-bar" style="margin: 20px 24px 0;">
+                <button class="tab-btn active" onclick="switchProfileTab('infoTab', this)">Thông tin</button>
+                <button class="tab-btn" onclick="switchProfileTab('pwdTab', this)">Đổi mật khẩu</button>
+            </div>
+
+            <!-- TAB INFO -->
+            <form id="infoTab" class="tab-content active" onsubmit="handleUpdateProfile(event)" style="padding: 24px;">
+                <div class="form-group">
+                    <label>Họ Tên</label>
+                    <input type="text" id="profName" class="form-control" readonly style="background:#f1f5f9; cursor:not-allowed;">
+                </div>
+                <div class="form-group">
+                    <label>Số Điện Thoại *</label>
+                    <input type="text" id="profPhone" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label>Email *</label>
+                    <input type="email" id="profEmail" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label>Địa Chỉ</label>
+                    <input type="text" id="profAddress" class="form-control">
+                </div>
+                <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:20px;">
+                    <button type="button" class="btn-cancel" onclick="closeProfileModal()">Hủy</button>
+                    <button type="submit" class="btn-save">Lưu Thay Đổi</button>
+                </div>
+            </form>
+
+            <!-- TAB PASSWORD -->
+            <form id="pwdTab" class="tab-content" onsubmit="handleChangePassword(event)" style="padding: 24px;">
+                <div class="form-group">
+                    <label>Mật Khẩu Hiện Tại *</label>
+                    <input type="password" id="oldPwd" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label>Mật Khẩu Mới *</label>
+                    <input type="password" id="newPwd" class="form-control" required minlength="6">
+                </div>
+                <div class="form-group">
+                    <label>Xác Nhận Mật Khẩu Mới *</label>
+                    <input type="password" id="confirmPwd" class="form-control" required minlength="6">
+                </div>
+                <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:20px;">
+                    <button type="button" class="btn-cancel" onclick="closeProfileModal()">Hủy</button>
+                    <button type="submit" class="btn-save">Đổi Mật Khẩu</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- SCRIPT NGHIỆP VỤ DƯỢC & KHO THUỐC -->
+    <script>
+        // Dữ liệu kho thuốc và đơn thuốc được tải từ hệ thống; không còn dữ liệu mẫu.
+        let drugs = [];
+        let prescriptions = [];
+
+        async function loadPharmacyData() {
+            try {
+                const [drugsRes, presRes] = await Promise.all([
+                    fetch('/api/v1/thuoc'),
+                    fetch('/api/v1/donthuoc')
+                ]);
+
+                if (drugsRes.ok) {
+                    const rawDrugs = await drugsRes.json();
+                    drugs = rawDrugs.map(d => ({
+                        id: d.maThuoc,
+                        name: d.tenThuoc,
+                        unit: d.donViTinh,
+                        price: d.donGiaBan || 0,
+                        stock: d.tonKhoHienTai || 0,
+                        warningLimit: d.nguongCanhBao || 10
+                    }));
+                    renderDrugs();
+                    updateImportDrugSelect();
+                }
+
+                if (presRes.ok) {
+                    prescriptions = await presRes.json();
+                    renderPrescriptions();
+                }
+            } catch (err) {
+                console.error("Lỗi tải dữ liệu kho thuốc:", err);
+            }
+        }
+
+        function updateImportDrugSelect() {
+            const sel = document.getElementById('impDrugId');
+            if (!sel || drugs.length === 0) return;
+            sel.innerHTML = drugs.map(d => `<option value="${d.id}">${d.name} (${d.unit}) - Tồn: ${d.stock}</option>`).join('');
+        }
+
+        function switchTab(tabId, btn) {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+
+            btn.classList.add('active');
+            document.getElementById(tabId).classList.add('active');
+        }
+
+        // Render danh mục thuốc (UC44)
+        function renderDrugs(list = drugs) {
+            const tbody = document.getElementById('drugTableBody');
+            tbody.innerHTML = '';
+
+            list.forEach(d => {
+                let statusText = '<span style="color:#10b981; font-weight:600;"><i class="fa-solid fa-check"></i> Đầy đủ</span>';
+                if (d.stock <= (d.warningLimit || 20)) {
+                    statusText = '<span style="color:#ef4444; font-weight:700;"><i class="fa-solid fa-triangle-exclamation"></i> Sắp hết</span>';
+                }
+
+                tbody.innerHTML += `
+                    <tr>
+                        <td><span class="badge-code">${d.id}</span></td>
+                        <td><strong>${d.name}</strong></td>
+                        <td>${d.unit}</td>
+                        <td>${d.price.toLocaleString('vi-VN')} đ</td>
+                        <td style="font-weight:700; font-size:14px;">${d.stock}</td>
+                        <td>${statusText}</td>
+                    </tr>
+                `;
+            });
+        }
+
+        function filterDrugs() {
+            const kw = document.getElementById('drugSearchInput').value.trim().toLowerCase();
+            const filtered = drugs.filter(d => 
+                d.name.toLowerCase().includes(kw) || 
+                d.id.toLowerCase().includes(kw)
+            );
+            renderDrugs(filtered);
+        }
+
+        // Render đơn thuốc chờ cấp phát
+        // Render đơn thuốc chờ cấp phát (Kiểm tra thanh toán viện phí)
+        function renderPrescriptions() {
+            const tbody = document.getElementById('prescriptionTableBody');
+            tbody.innerHTML = '';
+
+            if (prescriptions.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:20px; color:var(--text-muted);">Chưa có đơn thuốc nào cần xử lý.</td></tr>';
+                return;
+            }
+
+            prescriptions.forEach(p => {
+                // Kiểm tra xem đơn thuốc này đã thanh toán hóa đơn viện phí chưa
+                const isPaid = p.paymentStatus === 'DaThanhToan';
+
+                // Trạng thái đơn thuốc & viện phí
+                let statusHtml = '';
+                if (p.status === 'DISPENSED') {
+                    statusHtml = '<span class="badge-status status-dispensed">Đã phát thuốc</span>';
+                } else if (isPaid) {
+                    statusHtml = '<span class="badge-status" style="background:#dcfce7; color:#15803d; font-weight:600;"><i class="fa-solid fa-check"></i> Đã đóng tiền - Chờ phát</span>';
+                } else {
+                    statusHtml = '<span class="badge-status" style="background:#fee2e2; color:#dc2626; font-weight:700;"><i class="fa-solid fa-circle-exclamation"></i> Chưa đóng tiền</span>';
+                }
+
+                // Nút hành động
+                let actionHtml = '';
+                if (p.status === 'DISPENSED') {
+                    actionHtml = '<span style="color:#10b981; font-weight:600;"><i class="fa-solid fa-check-double"></i> Đã hoàn tất</span>';
+                } else if (!isPaid) {
+                    // Chưa đóng tiền -> Khóa nút bấm lại (disabled)
+                    actionHtml = '<button class="btn-dispense" disabled style="background:#e2e8f0; color:#94a3b8; cursor:not-allowed;" title="Bệnh nhân chưa đóng viện phí, không thể xuất thuốc"><i class="fa-solid fa-ban"></i> Chờ đóng tiền</button>';
+                } else {
+                    // Đã đóng tiền -> Cho phép Dược sĩ bấm xuất thuốc
+                    actionHtml = `<button class="btn-dispense" onclick="dispenseDrug('${p.id}')"><i class="fa-solid fa-box-open"></i> Xuất Thuốc (Trừ Tồn)</button>`;
+                }
+
+                tbody.innerHTML += `
+                    <tr>
+                        <td><span class="badge-code">${p.id}</span></td>
+                        <td><strong>${p.patientName || p.patientId || 'Bệnh nhân'}</strong></td>
+                        <td>${p.doctor || 'Bác sĩ kê đơn'}</td>
+                        <td><strong>${p.drugName || p.drugId}</strong>: ${p.qty} viên</td>
+                        <td>${statusHtml}</td>
+                        <td>${actionHtml}</td>
+                    </tr>
+                `;
+            });
+        }
+
+        // Cấp phát thuốc & tự động trừ tồn kho (UC46, UC48)
+        async function dispenseDrug(prescriptionId) {
+            try {
+                const res = await fetch(`/api/v1/donthuoc/${encodeURIComponent(prescriptionId)}/xuat`, {
+                    method: 'POST'
+                });
+
+                if (!res.ok) {
+                    const err = await res.text();
+                    alert("Lỗi xuất thuốc: " + err);
+                    return;
+                }
+
+                alert(`Xuất thuốc thành công cho đơn ${prescriptionId}!\nĐã trừ số lượng khỏi kho dược trên SQL Server.`);
+                await loadPharmacyData();
+            } catch (err) {
+                console.error(err);
+                alert("Lỗi kết nối khi xuất thuốc!");
+            }
+        }
+
+        // Modal Nhập kho thuốc (UC45, UC51)
+        function openImportModal() {
+            document.getElementById('impCode').value = `PN2026-${String(Date.now()).slice(-4)}`;
+            document.getElementById('impDate').valueAsDate = new Date();
+            
+            const next2Years = new Date();
+            next2Years.setFullYear(next2Years.getFullYear() + 2);
+            document.getElementById('impExpiry').valueAsDate = next2Years;
+
+            document.getElementById('importModal').style.display = 'flex';
+        }
+
+        function closeImportModal() {
+            document.getElementById('importModal').style.display = 'none';
+        }
+
+        async function handleImportDrug(e) {
+            e.preventDefault();
+            const drugId = document.getElementById('impDrugId').value;
+            const qty = parseInt(document.getElementById('impQty').value);
+            const supplier = document.getElementById('impSupplier').value;
+            const invoiceNo = document.getElementById('impInvoiceNo').value;
+            const batch = document.getElementById('impBatch').value;
+            const expiry = document.getElementById('impExpiry').value;
+            const price = document.getElementById('impPrice').value;
+
+            const payload = {
+                maThuoc: drugId,
+                soLuong: qty,
+                nhaCungCap: supplier,
+                soHoaDonNCC: invoiceNo,
+                soLo: batch,
+                hanSuDung: expiry,
+                donGia: price
+            };
+
+            try {
+                const res = await fetch('/api/v1/thuoc/nhapkho', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!res.ok) {
+                    const err = await res.text();
+                    alert("Lỗi nhập kho: " + err);
+                    return;
+                }
+
+                alert(`Nhập kho thành công!\nSố lượng nhập thêm: +${qty}\nĐã cập nhật tồn kho và tạo phiếu nhập vào CSDL SQL Server!`);
+                closeImportModal();
+                await loadPharmacyData();
+            } catch (err) {
+                console.error(err);
+                alert("Không thể kết nối đến máy chủ Backend!");
+            }
+        }
+
+        function logout() {
+            sessionStorage.removeItem('authenticatedUser');
+            window.location.href = '/login.html';
+        }
+
+        // Profile Modal Logic
+        async function openProfileModal() {
+            try {
+                const res = await fetch('/api/v1/nhanvien/me');
+                if (res.ok) {
+                    const data = await res.json();
+                    document.getElementById('profName').value = data.hoTen || '';
+                    document.getElementById('profPhone').value = data.soDienThoai || '';
+                    document.getElementById('profEmail').value = data.email || '';
+                    document.getElementById('profAddress').value = data.diaChi || '';
+                }
+            } catch (err) {
+                console.error("Lỗi tải thông tin:", err);
+            }
+            document.getElementById('profileModal').style.display = 'flex';
+        }
+
+        function closeProfileModal() {
+            document.getElementById('profileModal').style.display = 'none';
+        }
+
+        function switchProfileTab(tabId, btn) {
+            const modal = document.getElementById('profileModal');
+            modal.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            modal.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            btn.classList.add('active');
+            document.getElementById(tabId).classList.add('active');
+        }
+
+        async function handleUpdateProfile(e) {
+            e.preventDefault();
+            const payload = {
+                soDienThoai: document.getElementById('profPhone').value,
+                email: document.getElementById('profEmail').value,
+                diaChi: document.getElementById('profAddress').value
+            };
+            try {
+                const res = await fetch('/api/v1/nhanvien/me', {
+                    method: 'PUT',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(payload)
+                });
+                if (res.ok) {
+                    alert('Cập nhật thông tin thành công!');
+                    closeProfileModal();
+                } else {
+                    const err = await res.json();
+                    alert('Lỗi: ' + (err.message || 'Không thể cập nhật'));
+                }
+            } catch (err) {
+                alert('Lỗi kết nối');
+            }
+        }
+
+        async function handleChangePassword(e) {
+            e.preventDefault();
+            const oldPwd = document.getElementById('oldPwd').value;
+            const newPwd = document.getElementById('newPwd').value;
+            const confirmPwd = document.getElementById('confirmPwd').value;
+
+            if (newPwd !== confirmPwd) {
+                alert('Mật khẩu xác nhận không khớp!');
+                return;
+            }
+
+            try {
+                const res = await fetch('/api/v1/taikhoan/change-password', {
+                    method: 'PUT',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ oldPassword: oldPwd, newPassword: newPwd })
+                });
+                if (res.ok) {
+                    alert('Đổi mật khẩu thành công! Vui lòng đăng nhập lại.');
+                    logout();
+                } else {
+                    const err = await res.json();
+                    alert('Lỗi: ' + (err.message || 'Không thể đổi mật khẩu'));
+                }
+            } catch (err) {
+                alert('Lỗi kết nối');
+            }
+        }
+
+        window.onload = async function() {
+            await loadPharmacyData();
+        };
+    </script>
+    <script src="/auth-guard.js?v=2"></script>
+</body>
+</html>
